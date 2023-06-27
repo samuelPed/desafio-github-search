@@ -1,5 +1,6 @@
 package br.com.igorbag.githubsearch.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Binder
@@ -14,6 +15,7 @@ import br.com.igorbag.githubsearch.databinding.ActivityMainBinding
 import br.com.igorbag.githubsearch.domain.Repository
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.contracts.Returns
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,10 +30,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        setupRetrofit()
+        //setupRetrofit()
         setupView()
-        showUserName()
-        setupRetrofit()
+        setupListeners()
+        nomeUsuario.setText(showUserName())
         getAllReposByUserName()
     }
 
@@ -46,17 +48,22 @@ class MainActivity : AppCompatActivity() {
     private fun setupListeners() {
         //@TODO 2 - colocar a acao de click do botao confirmar
         btnConfirmar.setOnClickListener{
-
+            saveUserLocal(nomeUsuario.text.toString())
         }
     }
 
     // salvar o usuario preenchido no EditText utilizando uma SharedPreferences
-    private fun saveUserLocal() {
-        //@TODO 3 - Persistir o usuario preenchido na editText com a SharedPref no listener do botao salvar
+    private fun saveUserLocal(nomeUsuario: String) {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE) ?: return
+        with(sharedPref.edit()){
+            putString(getString(R.string.saved_name), nomeUsuario)
+            apply()
+        }
     }
 
-    private fun showUserName() {
-        //@TODO 4- depois de persistir o usuario exibir sempre as informacoes no EditText  se a sharedpref possuir algum valor, exibir no proprio editText o valor salvo
+    private fun showUserName(): String? {
+        val sharedPref = getPreferences(Context.MODE_PRIVATE)
+        return sharedPref.getString(getString(R.string.saved_name), "")
     }
 
     //Metodo responsavel por fazer a configuracao base do Retrofit
