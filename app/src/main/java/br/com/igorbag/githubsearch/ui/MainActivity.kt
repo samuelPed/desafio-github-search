@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     //Metodo responsavel por buscar todos os repositorios do usuario fornecido
     fun getAllReposByUserName() {
         // TODO 6 - realizar a implementacao do callback do retrofit e chamar o metodo setupAdapter se retornar os dados com sucesso
-        githubApi.getAllRepositoriesByUser(R.string.saved_name.toString()).enqueue(object : Callback<List<Repository>>{
+        githubApi.getAllRepositoriesByUser(nomeUsuario.text.toString()).enqueue(object : Callback<List<Repository>>{
             override fun onResponse(
                 call: Call<List<Repository>>,
                 response: Response<List<Repository>>
