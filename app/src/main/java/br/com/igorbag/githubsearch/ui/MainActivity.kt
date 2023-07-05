@@ -3,19 +3,23 @@ package br.com.igorbag.githubsearch.ui
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Binder
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import br.com.igorbag.githubsearch.R
 import br.com.igorbag.githubsearch.data.GitHubService
 import br.com.igorbag.githubsearch.databinding.ActivityMainBinding
 import br.com.igorbag.githubsearch.domain.Repository
+
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import kotlin.contracts.Returns
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,11 +34,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //setupRetrofit()
+        setupRetrofit()
         setupView()
         setupListeners()
         nomeUsuario.setText(showUserName())
-        getAllReposByUserName()
+
     }
 
     // Metodo responsavel por realizar o setup da view e recuperar os Ids do layout
@@ -49,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         //@TODO 2 - colocar a acao de click do botao confirmar
         btnConfirmar.setOnClickListener{
             saveUserLocal(nomeUsuario.text.toString())
+            getAllReposByUserName()
         }
     }
 
@@ -73,13 +78,31 @@ class MainActivity : AppCompatActivity() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
 
-        githubApi = retrofit.create(githubApi::class.java)
+        githubApi = retrofit.create(GitHubService::class.java)
 
     }
 
     //Metodo responsavel por buscar todos os repositorios do usuario fornecido
     fun getAllReposByUserName() {
         // TODO 6 - realizar a implementacao do callback do retrofit e chamar o metodo setupAdapter se retornar os dados com sucesso
+        githubApi.getAllRepositoriesByUser(R.string.saved_name.toString()).enqueue(object : Callback<List<Repository>>{
+            override fun onResponse(
+                call: Call<List<Repository>>,
+                response: Response<List<Repository>>
+            ) {
+                if(response.isSuccessful){
+                    response.body()?.let {
+                        setupAdapter(it)
+                    }
+                }else{
+                    Toast.makeText(applicationContext, "Erro ao gerar lista", Toast.LENGTH_LONG).show()
+                }
+            }
+
+            override fun onFailure(call: Call<List<Repository>>, t: Throwable) {
+                Toast.makeText(applicationContext, "Falha ao gerar lista", Toast.LENGTH_LONG).show()
+            }
+        })
     }
 
     // Metodo responsavel por realizar a configuracao do adapter
